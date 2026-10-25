@@ -311,6 +311,31 @@ main.courses-main .hero-section {
   flex-basis: 50% !important;
 }
 
+.video-card-track {
+  flex-wrap: nowrap;
+  position: relative;
+  width: 100%;
+}
+
+.video-card-track .video-card {
+  flex: 0 0 25%;
+  max-width: 25%;
+}
+
+@media screen and (max-width: 768px) {
+  .video-card-track .video-card {
+    flex-basis: 50%;
+    max-width: 50%;
+  }
+}
+
+@media screen and (max-width: 576px) {
+  .video-card-track .video-card {
+    flex-basis: 100%;
+    max-width: 100%;
+  }
+}
+
 .tutorial-video-top {
   position: relative;
 }

@@ -1,246 +1,229 @@
-$(document).ready(function() {
-    $.ajax({
-        url: 'https://smileschool-api.hbtn.info/quotes',
-        type: 'GET',
-        beforeSend: function() {
-            $("#MyLoader").show();
-        },
-        success: function(request) {
-            $("#MyLoader").hide();
-            for (let i = 0; i < request.length; i++) {
-                let $html = $(`
-                <div class="carousel-item carousel-item-content ${i === 0 ? 'active' : ''}">
-                    <div class="row">
-                        <div class="col-sm-3 text-center">
-                            <img class="rounded-circle" src=${request[i].pic_url} class="d-block w-100" alt="random alt image">
-                        </div>
-                        <div class="col-sm-8 ml-3 d-flex flex-column">
-                            <div>&lt;&lt; ${request[i].text} &gt;&gt;</div>
-                            <div class="font-weight-bold mt-3">${request[i].name}</div>
-                            <div>${request[i].title}</div>
-                        </div>
-                    </div>
-                </div>`);
-                $("#quotesCarouselInner").append($html);
-            }
-        },
-    })
-});
+$(function() {
+    const api = 'https://smileschool-api.hbtn.info/';
 
+    function showLoader($loader, show) {
+        $loader.toggle(show);
+    }
 
-    $.ajax({
-        url: 'https://smileschool-api.hbtn.info/popular-tutorials',
-        type: 'GET',
-        beforeSend: function() {
-        $("#TutorialAreaLoader").show();
-        },
-        success: function(request) {
-        $("#TutorialAreaLoader").hide();
-        for (let i = 0; i < request.length; i++) {
-            let $reviewstars = "";
-            for (let j = 0; j < request[i].star; j++) {
-            $reviewstars += '<img src="./images/star_on.png" class="mr-1 carousel-star-icon" alt="review start purple">';
-            }
-            for (let j = request[i].star; j < 5; j++) {
-            $reviewstars += '<img src="./images/star_off.png" class="carousel-star-icon" alt="review star gray">';
-            }
-            let $html = $(`
-                <div class="text-center col-12 col-sm-6 col-md-3">
-                    <div class="carousel-item active">
-                        <img class="w-100" src="${request[i].thumb_url}" alt="smile image">
-                        <div class="mx-3">
-                            <div class="font-weight-bold text-dark text-left mt-3">
-                                ${request[i].title}
-                            </div>
-                            <div class="text-secondary text-left mt-3 mb-3">
-                                ${request[i]["sub-title"]}
-                            </div>
-                            <div class="d-flex align-items-center mb-3">
-                                <img src="${request[i].author_pic_url}" class="rounded-circle mr-3 video-carousel-img-profile" alt="profile image">
-                                <div class="purple-text font-weight-bold">${request[i].author}</div>
-                            </div>
-                            <div class="d-flex justify-content-between">
-                                <div class="d-flex pt-1">
-                                ${$reviewstars}
-                                </div>
-                                <div class="purple-text font-weight-bold">
-                                    ${request[i].duration}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>`);
-                $("#TutorialArea").append($html);
-            }
-        },
-    });
+    function renderQuotes(quotes, $inner) {
+        const $loader = $inner.find('.loader');
+        $inner.empty();
 
-
-    $.ajax({
-        url: 'https://smileschool-api.hbtn.info/latest-videos',
-        type: 'GET',
-        beforeSend: function() {
-          $("#VideosLoader").show();
-        },
-        success: function(request) {
-          $("#VideosLoader").hide();
-          for (let i = 0; i < request.length; i++) {
-            let $stars = "";
-            for (let j = 0; j < request[i].star; j++) {
-              $stars += '<img src="./images/star_on.png" class="mr-1 carousel-star-icon" alt="star icon filled in purple">';
+        quotes.forEach(function(quote, index) {
+            const $item = $('<div>').addClass('carousel-item carousel-item-content');
+            if (index === 0) {
+                $item.addClass('active');
             }
-            for (let j = 0; j < 5 - response[i].star; j++) {
-              $stars += '<img src="./images/star_off.png" class="carousel-star-icon" alt="star icon filled in grey">';
-            }
-            let $html = $(`
-                <div class="text-center col-12 col-sm-6 col-md-3">
-                    <div class="carousel-item active">
-                        <img class="w-100" src="${request[i].thumb_url}" alt="smile image">
-                        <div class="mx-3">
-                            <div class="font-weight-bold text-dark text-left mt-3">
-                                ${request[i].title}
-                            </div>
-                            <div class="text-secondary text-left mt-3 mb-3">
-                                ${response[i]["sub-title"]}
-                            </div>
-                            <div class="d-flex align-items-center mb-3">
-                                <img src="${request[i].author_pic_url}" class="rounded-circle mr-3 video-carousel-img-profile" alt="profile image">
-                                <div class="purple-text font-weight-bold">${request[i].author}</div>
-                            </div>
-                            <div class="d-flex justify-content-between">
-                                <div class="d-flex pt-1">
-                                ${$stars}
-                                </div>
-                                <div class="purple-text font-weight-bold">
-                                    ${request[i].duration}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>`);
-                $("#LatestVids").append($html);
-            }
-          },
+            const $row = $('<div>').addClass('row');
+            const $image = $('<img>').addClass('rounded-circle')
+                .attr({ src: quote.pic_url, alt: quote.name });
+            const $body = $('<div>').addClass('col-sm-8 ml-3 d-flex flex-column')
+                .append($('<div>').text('« ' + quote.text + ' »'))
+                .append($('<div>').addClass('font-weight-bold mt-3').text(quote.name))
+                .append($('<div>').text(quote.title));
+            $row.append($('<div>').addClass('col-sm-3 text-center').append($image), $body);
+            $inner.append($item.append($row));
         });
+        showLoader($loader, false);
+    }
 
+    function renderVideo(video, $target) {
+        const $card = $('<div>').addClass('video-card text-center col-12 col-sm-6 col-md-3 mb-5');
+        const $image = $('<img>').addClass('w-100').attr({
+            src: video.thumb_url,
+            alt: video.title
+        });
+        const $details = $('<div>').addClass('mx-3')
+            .append($('<div>').addClass('font-weight-bold text-dark text-left mt-3').text(video.title))
+            .append($('<div>').addClass('text-secondary text-left mt-3 mb-3').text(video['sub-title']));
+        const $author = $('<div>').addClass('d-flex align-items-center mb-3')
+            .append($('<img>').attr({
+                src: video.author_pic_url,
+                alt: video.author
+            }).addClass('rounded-circle mr-3 video-carousel-img-profile'))
+            .append($('<div>').addClass('purple-text font-weight-bold').text(video.author));
+        const $stars = $('<div>').addClass('d-flex pt-1');
+        const rating = Number(video.star) || 0;
+        for (let i = 0; i < 5; i++) {
+            $stars.append($('<img>').addClass('carousel-star-icon' + (i < rating ? ' mr-1' : ''))
+                .attr({
+                    src: i < rating ? './images/star_on.png' : './images/star_off.png',
+                    alt: i < rating ? 'star' : 'empty star'
+                }));
+        }
+        const $rating = $('<div>').addClass('d-flex justify-content-between')
+            .append($stars)
+            .append($('<div>').addClass('purple-text font-weight-bold').text(video.duration));
 
+        $target.append($card.append($image, $details.append($author, $rating)));
+    }
+
+    function setupCardCarousel($target) {
+        const $carousel = $target.closest('.carousel');
+        let current = 0;
+        $carousel.removeAttr('data-ride');
+        $carousel.find('.carousel-control-prev, .carousel-control-next').removeAttr('data-slide');
+
+        function update() {
+            const count = $target.children('.video-card').length;
+            const visible = window.innerWidth <= 576 ? 1 : (window.innerWidth <= 768 ? 2 : 4);
+            const max = Math.max(0, count - visible);
+            current = Math.min(current, max);
+            const cardWidth = $target.children('.video-card').first().outerWidth(true) || 0;
+            $target.css('left', (-current * cardWidth) + 'px');
+        }
+
+        $carousel.find('.carousel-control-prev, .carousel-control-next')
+            .off('click.videoCarousel')
+            .on('click.videoCarousel', function(event) {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                const count = $target.children('.video-card').length;
+                const visible = window.innerWidth <= 576 ? 1 : (window.innerWidth <= 768 ? 2 : 4);
+                const max = Math.max(0, count - visible);
+                current = $(this).hasClass('carousel-control-next')
+                    ? Math.min(current + 1, max)
+                    : Math.max(current - 1, 0);
+                update();
+            });
+        $(window).off('resize.' + $target.attr('id')).on('resize.' + $target.attr('id'), update);
+        update();
+    }
+
+    function loadVideos(endpoint, targetId, loaderId) {
+        const $target = $('#' + targetId);
+        if (!$target.length) {
+            return;
+        }
+        const $loader = $('#' + loaderId);
         $.ajax({
-            url: 'https://smileschool-api.hbtn.info/courses',
+            url: api + endpoint,
             type: 'GET',
-            data: {
-              action: 'query',
-              list: 'search',
-              format: 'json',
-              // q: '',
-              // topic: 'all',
-              // sort: 'most_viewed',
-            },
+            dataType: 'json',
             beforeSend: function() {
-          $("#CoursesLoader").show();
-        },
-            success: function(request) {
-              $("#CoursesLoader").hide();
-              let $t = request.topics;
-                $("#topic-menu-container").append(`<button class="btn btn-secondary border-0 rounded-0 search-element w-100 text-left" type="button" id="current-topic" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  ${$t[0].substr(0,1).toUpperCase()+ $t[0].substr(1)}
-                </button>
-                <div class="dropdown-menu" id="topic-menu" aria-labelledby="topic-menu-container"></div>`);
-              let $topics = '';
-              for (let i = 0; i < $t.length; i++) {
-                $topics += `<button data-value="${$t[i]}" class="dropdown-item" type="button">${$t[i].substr(0,1).toUpperCase()+ $t[i].substr(1)}</button>`;
-              }
-              $("#topic-menu").append($topics);
-
-
-              let $s = request.sorts;
-                $("#sort-menu-container").append(`<button class="btn btn-secondary border-0 rounded-0 search-element w-100 text-left" type="button" id="current-sort" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  ${$s[0].substr(0,1).toUpperCase()+ $s[0].substr(1,3) + ' ' + $s[0].substr(5,1).toUpperCase() + $s[0].substr(6)}
-                </button>
-                <div class="dropdown-menu" id="sort-menu" aria-labelledby="sort-menu-container"></div>`);
-              let $sorts = '';
-              for (let i = 0; i < $s.length; i++) {
-                $sorts += `<button data-value="${$s[i]}" class="dropdown-item" type="button">${$s[i].substr(0,1).toUpperCase()+ $s[i].substr(1,3) + ' ' + $s[i].substr(5,1).toUpperCase() + $s[i].substr(6)}</button>`;
-              }
-              $("#sort-menu").append($sorts);
-              $.displayCourses('', $('#current-topic').text().trim(), $('#current-sort').text().trim());
-
-              let $topicVal;
-              $('#topic-menu button').click(function(e) {
-                $topicVal = e.target.getAttribute('data-value');
-                $('#current-topic').text(e.target.textContent);
-                $.displayCourses($("#user_search").val(), $('#current-topic').text().trim(), $('#current-sort').text().trim());
-                console.log($("#user_search").val());
-              });
-              $('#sort-menu button').click(function(e) {
-                $topicVal = e.target.getAttribute('data-value');
-                $('#current-sort').text(e.target.textContent);
-                $.displayCourses($("#user_search").val(), $('#current-topic').text().trim(), $('#current-sort').text().trim());
-              });
-              $('#user_search').on('input', function(e) {
-                setTimeout(function() {
-                  $.displayCourses($("#user_search").val(), $('#current-topic').text().trim(), $('#current-sort').text().trim());
-                }, 500);
-              });
-
-            }
-          });
-
-          $.displayCourses = function($q, $t, $s) {
-            $.ajax({
-                  url: 'https://smileschool-api.hbtn.info/courses',
-                  type: 'GET',
-                  data: {
-                    action: 'query',
-                    list: 'search',
-                    format: 'json',
-                    q: $q,
-                    topic: $t,
-                    sort: $s,
-                  },
-                  beforeSend: function() {
-                $("#CoursesLoader").show();
-              },
-                  success: function(request) {
-                    $("#CoursesLoader").hide();
-                    let $c = request.courses;
-                    $("#coursesvideos").empty();
-                    $("#numberofvideos").text(`${$c.length === 1 ? '1 video' : $c.length + ' videos'}`);
-                    for (let i = 0; i < $c.length; i++) {
-                      let $stars = '';
-                      for (let j = 0; j < $c[i].star; j++) {
-                        $stars += '<img src="./images/star_on.png" class="mr-1 carousel-star-icon" alt="star icon filled in purple">';
-                      }
-                      for (let j = 0; j < 5 - $c[i].star; j++) {
-                        $stars += '<img src="./images/star_off.png" class="carousel-star-icon" alt="star icon filled in grey">';
-                      }
-                      let $html = $(`
-                          <div class="text-center col-12 col-sm-6 col-md-3">
-                              <div class="carousel-item active">
-                                  <img class="w-100" src="${$c[i].thumb_url}" alt="smile image">
-                                  <div class="mx-3">
-                                      <div class="font-weight-bold text-dark text-left mt-3">
-                                          ${$c[i].title}
-                                      </div>
-                                      <div class="text-secondary text-left mt-3 mb-3">
-                                          ${$c[i]["sub-title"]}
-                                      </div>
-                                      <div class="d-flex align-items-center mb-3">
-                                          <img src="${$c[i].author_pic_url}" class="rounded-circle mr-3 video-carousel-img-profile" alt="profile image">
-                                          <div class="purple-text font-weight-bold">${$c[i].author}</div>
-                                      </div>
-                                      <div class="d-flex justify-content-between">
-                                          <div class="d-flex pt-1">
-                                          ${$stars}
-                                          </div>
-                                          <div class="purple-text font-weight-bold">
-                                              ${$c[i].duration}
-                                          </div>
-                                      </div>
-                                  </div>
-                              </div>
-                          </div>`);
-                          $("#coursesvideos").append($html);
-                        }
-                    }
+                showLoader($loader, true);
+            },
+            success: function(videos) {
+                $target.empty();
+                videos.forEach(function(video) {
+                    renderVideo(video, $target);
                 });
+                showLoader($loader, false);
+                setupCardCarousel($target);
+            },
+            error: function(xhr, status, error) {
+                showLoader($loader, false);
+                console.error('Could not load ' + endpoint + ': ' + (error || status));
             }
+        });
+    }
+
+    const $quotes = $('#quotesCarouselInner, #quotesCarouselInsider');
+    if ($quotes.length) {
+        $.ajax({
+            url: api + 'quotes',
+            type: 'GET',
+            dataType: 'json',
+            beforeSend: function() {
+                showLoader($quotes.find('.loader'), true);
+            },
+            success: function(quotes) {
+                renderQuotes(quotes, $quotes);
+            },
+            error: function(xhr, status, error) {
+                showLoader($quotes.find('.loader'), false);
+                console.error('Could not load quotes: ' + (error || status));
+            }
+        });
+    }
+
+    loadVideos('popular-tutorials', 'TutorialArea', 'TutorialAreaLoader');
+    loadVideos('popular-tutorials', 'tutorialvideos', 'VideosLoader');
+    loadVideos('latest-videos', 'latestvideos', 'LVideosLoader');
+
+    const $courseResults = $('#coursesvideos');
+    if (!$courseResults.length) {
+        return;
+    }
+    const $courseLoader = $('#CoursesLoader');
+    const $search = $('#user_search');
+    let topicValues = [];
+    let sortValues = [];
+    let searchTimer;
+
+    function readable(value) {
+        return value.replace(/_/g, ' ').replace(/\b\w/g, function(letter) {
+            return letter.toUpperCase();
+        });
+    }
+
+    function buildDropdown($container, id, values, current, onChange) {
+        const $button = $('<button>').addClass('btn btn-secondary border-0 rounded-0 search-element w-100 text-left')
+            .attr({ type: 'button', id: id, 'data-toggle': 'dropdown', 'aria-haspopup': 'true', 'aria-expanded': 'false' })
+            .text(readable(current));
+        const $menu = $('<div>').addClass('dropdown-menu').attr('aria-labelledby', id);
+        values.forEach(function(value) {
+            $('<button>').addClass('dropdown-item').attr({ type: 'button', 'data-value': value })
+                .text(readable(value)).appendTo($menu);
+        });
+        $container.empty().append($button, $menu);
+        $menu.on('click', 'button', function() {
+            $button.text($(this).text()).attr('data-value', $(this).attr('data-value'));
+            onChange($(this).attr('data-value'));
+        });
+    }
+
+    function requestCourses(q, topic, sort, includeFilters) {
+        $.ajax({
+            url: api + 'courses',
+            type: 'GET',
+            dataType: 'json',
+            data: includeFilters ? { q: q, topic: topic, sort: sort } : {},
+            beforeSend: function() {
+                showLoader($courseLoader, true);
+            },
+            success: function(response) {
+                if (!includeFilters) {
+                    topicValues = response.topics || [];
+                    sortValues = response.sorts || [];
+                    $search.val(response.q || '');
+                    const topic = topicValues[0] || 'all';
+                    const sort = sortValues[0] || 'most popular';
+                    buildDropdown($('#topic-menu-container'), 'current-topic', topicValues, topic, function() {
+                        requestCourses($search.val(), $('#current-topic').attr('data-value'), $('#current-sort').attr('data-value'), true);
+                    });
+                    buildDropdown($('#sort-menu-container'), 'current-sort', sortValues, sort, function() {
+                        requestCourses($search.val(), $('#current-topic').attr('data-value'), $('#current-sort').attr('data-value'), true);
+                    });
+                    $('#current-topic').attr('data-value', topic);
+                    $('#current-sort').attr('data-value', sort);
+                    renderCourseResults(response.courses || []);
+                    showLoader($courseLoader, false);
+                    return;
+                }
+                renderCourseResults(response.courses || []);
+                showLoader($courseLoader, false);
+            },
+            error: function(xhr, status, error) {
+                showLoader($courseLoader, false);
+                console.error('Could not load courses: ' + (error || status));
+            }
+        });
+    }
+
+    function renderCourseResults(courses) {
+        $courseResults.empty().append($courseLoader);
+        courses.forEach(function(course) {
+            renderVideo(course, $courseResults);
+        });
+        $('#numberofvideos').text(courses.length + (courses.length === 1 ? ' video' : ' videos'));
+    }
+
+    requestCourses('', '', '', false);
+    $search.on('input', function() {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(function() {
+            requestCourses($search.val(), $('#current-topic').attr('data-value'), $('#current-sort').attr('data-value'), true);
+        }, 300);
+    });
+});
